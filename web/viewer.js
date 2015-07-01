@@ -3948,13 +3948,14 @@ var PDFPageView = (function PDFPageViewClosure() {
       return promise;
     },
 
-    beforePrint: function PDFPageView_beforePrint() {
+        beforePrint: function PDFPageView_beforePrint() {
       var pdfPage = this.pdfPage;
 
-      var viewport = pdfPage.getViewport(1);
+      var viewport = pdfPage.getViewport(2);
       // Use the same hack we use for high dpi displays for printing to get
       // better output until bug 811002 is fixed in FF.
-      var PRINT_OUTPUT_SCALE = 2;
+      // In this fork I have not tested for regressions here
+      var PRINT_OUTPUT_SCALE = 1;
       var canvas = document.createElement('canvas');
 
       // The logical size of the canvas.
@@ -3972,8 +3973,9 @@ var PDFPageView = (function PDFPageViewClosure() {
 
       var printContainer = document.getElementById('printContainer');
       var canvasWrapper = document.createElement('div');
-      canvasWrapper.style.width = viewport.width + 'pt';
-      canvasWrapper.style.height = viewport.height + 'pt';
+      canvasWrapper.style.width = viewport.width + 'px';
+      canvasWrapper.style.height = viewport.height + 'px';
+      
       canvasWrapper.appendChild(canvas);
       printContainer.appendChild(canvasWrapper);
 
@@ -3984,9 +3986,11 @@ var PDFPageView = (function PDFPageViewClosure() {
         ctx.fillStyle = 'rgb(255, 255, 255)';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         ctx.restore();
+//#if !(MOZCENTRAL || FIREFOX)
         // Used by the mozCurrentTransform polyfill in src/display/canvas.js.
         ctx._transformMatrix =
           [PRINT_OUTPUT_SCALE, 0, 0, PRINT_OUTPUT_SCALE, 0, 0];
+//#endif
         ctx.scale(PRINT_OUTPUT_SCALE, PRINT_OUTPUT_SCALE);
 
         var renderContext = {
